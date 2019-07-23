@@ -8,7 +8,7 @@ Rails.application.routes.draw do
 
   root to: 'pages#home'
   resources :campaigns, except: [:new] do
-    post 'raffle' on: :member
+    post 'raffle', on: :member
   end
 
   get 'members/:token/opened', to: 'members#opened'
