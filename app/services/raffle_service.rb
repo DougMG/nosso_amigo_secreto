@@ -1,62 +1,35 @@
-require 'rails_helper'
-
-describe RaffleService do
-
-  before :each do
-    @campaign = create(:campaign, status: :pending)
+class RaffleService
+  def initialize(campaign)
+    @campaign = campaign
   end
 
-  describe '#call' do
-    context "when has more then two members" do
-      before(:each) do
-        create(:member, campaign: @campaign)
-        create(:member, campaign: @campaign)
-        create(:member, campaign: @campaign)
-        @campaign.reload
+  def call
+    return false if @campaign.members.count < 3
 
-        @results = RaffleService.new(@campaign).call
-      end
+    results = {}
+    members_list = @campaign.members
+    friends_list = @campaign.members
+    i = 0
+    while(members_list.count != i)
+      m = members_list[i]
+      i += 1
 
-      it "results is a hash" do
-        expect(@results.class).to eq(Hash)
-      end
+      loop do
+        friend = friends_list.sample
 
-      it "all members are in results as a member" do
-        result_members = @results.map {|r| r.first}
-        expect(result_members.sort).to eq(@campaign.members.sort)
-      end
-
-      it "all member are in results as a friend" do
-        result_friends = @results.map {|r| r.last}
-        expect(result_friends.sort).to eq(@campaign.members.sort)
-      end
-
-      it "a member don't get yourself" do
-        @results.each do |r|
-          expect(r.first).not_to eq(r.last)
+        if friends_list.count == 1 and friend == m
+          results = {}
+          members_list = @campaign.members
+          friends_list = @campaign.members
+          i = 0
+          break
+        elsif friend != m and results[friend] != m
+          results[m] = friend
+          friends_list -= [friend]
+          break
         end
       end
-
-      it "a member x don't get a member y that get the member x" do
-        # Desafio
-        @results.each do |r|
-          expect("#{r.first} => #{r.last}").not_to eq("#{r.last} => #{r.first}")
-        end
-      end
-
     end
-
-    context "when don't has more then two members" do
-      before(:each) do
-        create(:member, campaign: @campaign)
-        @campaign.reload
-
-        @response = RaffleService.new(@campaign).call
-      end
-
-      it "raise error" do
-        expect(@response).to eql(false)
-      end
-    end
+    results
   end
 end
