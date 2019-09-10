@@ -1,5 +1,5 @@
 $(document).on 'turbolinks:load', ->
-  $('.datepicker').pickadate({
+  $('.datepicker').datepicker({
     selectMonths: true,
     selectYears: 5,
     today: 'Today',
